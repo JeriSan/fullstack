@@ -1,13 +1,15 @@
-import com.backend.entity.PersonEntity;
+import com.backend.entity.*;
 import com.backend.FullStackApp;
 import com.backend.repository.PersonRepository;
-import com.backend.services.PersonService;
+import com.backend.services.*;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.w3c.dom.ls.LSException;
 
+import javax.print.Doc;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -20,6 +22,14 @@ import java.util.Optional;
 public class PersonTest {
     @Autowired
     private PersonService personService;
+    @Autowired
+    private UserService userService;
+    @Autowired
+    private LanguageService languageService;
+    @Autowired
+    private ProfessionService professionService;
+    @Autowired
+    private DocService docService;
     @Autowired
     private PersonRepository personRepository;
 
@@ -71,7 +81,7 @@ public class PersonTest {
 //findbyid y modificar luego save
     @Test
     public void findByIdSaveTest(){
-        Long personId = 3L;
+        Long personId = 2L;
         LocalDate date2 = LocalDate.of(1994, 10, 14);
         personService.changeBirthdate(personId, date2);
         PersonEntity savedPerson = personService.findById(personId).get();
@@ -80,11 +90,131 @@ public class PersonTest {
 
     @Test
     public void findByIdSaveTest2(){
-        Long personId = 3L;
+        Long personId = 2L;
         LocalDate date2 = LocalDate.of(1995, 10, 14);
         personService.changeBirthdate2(personId, date2);
         PersonEntity savedPerson = personService.findById(personId).get();
         System.out.println(savedPerson.getId()+ " "+ savedPerson.getName()+" "+savedPerson.getLastname()+" "+savedPerson.getBirthdate());
+    }
+
+    @Test
+    public void addAllInformation(){
+        DocumentEntity documentEntity = new DocumentEntity();
+        documentEntity.setDocType("pasaporte");
+
+        LanguageEntity languageEntity = new LanguageEntity();
+        languageEntity.setDescriptionLanguage("Italiano");
+
+        LanguageEntity languageEntity1 = new LanguageEntity();
+        languageEntity1.setDescriptionLanguage("Portugues");
+
+        List<LanguageEntity> listLanguage = new ArrayList<>();
+        listLanguage.add(languageEntity);
+        listLanguage.add(languageEntity1);
+
+        ProfessionEntity professionEntity = new ProfessionEntity();
+        professionEntity.setDescriptionProfession("Doctor");
+
+        List<ProfessionEntity> listProfession =  new ArrayList<>();
+        listProfession.add(professionEntity);
+
+
+        UserEntity userEntity = new UserEntity();
+        userEntity.setUsername("aaokiyi");
+        userEntity.setPassword("aokiyi123");
+
+        List<UserEntity> listUser = new ArrayList<>();
+        listUser.add(userEntity);
+
+        PersonEntity personEntity = new PersonEntity();
+        personEntity.setName("Akane");
+        personEntity.setLastname("Aokiyi");
+        LocalDate date1 = LocalDate.of(1984, 3, 8);
+        personEntity.setBirthdate(date1);
+        personEntity.setDocType(documentEntity);
+        personEntity.setUsernames(listUser);
+        personEntity.setProfessions(listProfession);
+        personEntity.setLanguages(listLanguage);
+
+        userEntity.setPersonEntity(personEntity);
+        professionEntity.setPersonEntity(personEntity);
+        languageEntity.setPersonEntity(personEntity);
+
+
+        docService.save(documentEntity);
+        personService.save(personEntity);
+        languageService.save(languageEntity);
+        languageService.save(languageEntity1);
+        professionService.save(professionEntity);
+        userService.save(userEntity);
+    }
+
+    @Test
+    public void selectPersonWithDoc(){
+        List<PersonEntity> listaPersona = personService.personaConDocumento();
+        for(PersonEntity person : listaPersona){
+            DocumentEntity doc = person.getDocType();
+            System.out.println(person.getId()+" "+person.getName()+" "+person.getLastname()+" "+person.getBirthdate());
+            if(doc==null){
+                System.out.println(" "+doc);
+            }else{
+                System.out.println(" "+doc.getId()+" "+doc.getDocType());
+            }
+        }
+
+    }
+    @Test
+    public void selectPersonWithLanguage(){
+
+    }
+    @Test
+    public void selectPersonWithProfession(){
+
+    }
+    @Test
+    public void selectPersonWithUser(){
+
+    }
+    @Test
+    public void selectPersonWithProfLan(){
+        List<PersonEntity> listaPersona = personService.personaConProfLan();
+        for (PersonEntity person : listaPersona){
+            List<LanguageEntity> lanList = person.getLanguages();
+            List<ProfessionEntity> profList = person.getProfessions();
+            System.out.println(person.getId()+" "+person.getName()+" "+person.getLastname()+" "+person.getBirthdate());
+            for (LanguageEntity lan : lanList){
+                System.out.println("\t"+lan.getId()+" "+lan.getDescriptionLanguage());
+            }
+            for(ProfessionEntity prof : profList){
+                System.out.println("\t"+prof.getId()+" "+prof.getDescriptionProfession());
+            }
+        }
+
+    }
+    @Test
+    public void selectPersonWithAllInformation(){
+        List<PersonEntity> listPerson = personService.personaConTodaInformacion();
+        for(PersonEntity person : listPerson) {
+            DocumentEntity doc = person.getDocType();
+            List<LanguageEntity> langList= person.getLanguages();
+            List<ProfessionEntity> profList = person.getProfessions();
+            List<UserEntity> userList = person.getUsernames();
+            System.out.println(person.getId()+" "+person.getName()+" "+person.getLastname()+" "+person.getBirthdate());
+            if(doc==null){
+                System.out.println(" "+doc);
+            }else{
+                System.out.println(" "+doc.getId()+" "+doc.getDocType());
+            }
+            for (LanguageEntity lan : langList){
+                System.out.println("\t"+lan.getId()+" "+lan.getDescriptionLanguage());
+            }
+            for(ProfessionEntity prof : profList){
+                System.out.println("\t"+prof.getId()+" "+prof.getDescriptionProfession());
+            }
+            for (UserEntity user : userList){
+                System.out.println("\t"+user.getId()+" "+user.getUsername()+" "+user.getPassword());
+            }
+        }
     }
 }
 
